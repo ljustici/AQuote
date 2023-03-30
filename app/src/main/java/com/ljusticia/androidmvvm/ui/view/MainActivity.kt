@@ -1,17 +1,18 @@
-package com.ljusticia.androidmvvm.view
+package com.ljusticia.androidmvvm.ui.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import com.ljusticia.androidmvvm.databinding.ActivityMainBinding
-import com.ljusticia.androidmvvm.viewmodel.QuoteViewModel
+import com.ljusticia.androidmvvm.ui.viewmodel.QuoteViewModel
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    //Se encarga de toda la lógica y conexión entre el viewmodel, el ciclo de vida, etc.
     private val quoteViewModel: QuoteViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,13 +20,18 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        quoteViewModel.onCreate()
+
         quoteViewModel.quoteModel.observe(this, Observer {
             binding.tvQuote.text = it.quote
             binding.tvAuthor.text = it.author
         })
+        quoteViewModel.isLoading.observe(this, Observer {
+            binding.loading.isVisible = it
+        })
 
-        binding.viewContainer.setOnClickListener {
-            quoteViewModel.randomQuote()
-        }
+        binding.viewContainer.setOnClickListener { quoteViewModel.randomQuote() }
+
     }
+
 }
