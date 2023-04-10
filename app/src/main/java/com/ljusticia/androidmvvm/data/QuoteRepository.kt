@@ -1,19 +1,35 @@
 package com.ljusticia.androidmvvm.data
 
+import com.ljusticia.androidmvvm.data.database.dao.QuoteDao
+import com.ljusticia.androidmvvm.data.database.entities.QuoteEntity
 import com.ljusticia.androidmvvm.data.model.QuoteModel
-import com.ljusticia.androidmvvm.data.model.QuoteProvider
 import com.ljusticia.androidmvvm.data.network.QuoteService
+import com.ljusticia.androidmvvm.domain.model.Quote
+import com.ljusticia.androidmvvm.domain.model.toDomain
 import javax.inject.Inject
 
-class QuoteRepository @Inject constructor(private val api : QuoteService,
-                                          private val quoteProvider: QuoteProvider){
+class QuoteRepository @Inject constructor(
+    private val api : QuoteService,
+    private val quoteDao: QuoteDao
+){
 
-    suspend fun getAllQuotes():List<QuoteModel>{
+    suspend fun getAllQuotesFromApi():List<Quote>{
         //Llama al backend y recuper la frase
-        val response = api.getQuotes()
-        //Guarda la frase
-        quoteProvider.quotes = response
+        val response: List<QuoteModel> = api.getQuotes()
         //Devuelve la respuesta
-        return response
+        return response.map{it.toDomain()}
+    }
+
+    suspend fun getAllQuotesFromDatabase():List<Quote> {
+        val response: List<QuoteEntity> = quoteDao.getAllQuotes()
+        return response.map{ it.toDomain() }
+    }
+
+    suspend fun insertQuotes(quotes:List<QuoteEntity>){
+        quoteDao.insertAll(quotes)
+    }
+
+    suspend fun clearQuotes(){
+        quoteDao.deleteAllQuotes()
     }
 }
